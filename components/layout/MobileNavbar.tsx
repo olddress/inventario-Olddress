@@ -32,15 +32,16 @@ export default function MobileNavbar() {
 
                 <Link href="/productos">📦</Link>
 
-                <Link href="/ventas">🛒</Link>
+                {/* <Link href="/ventas">🛒</Link>
 
-                <Link href="/clientes">👥</Link>
+                <Link href="/clientes">👥</Link>*/}
 
                 <Link href="/repartidores">🚚</Link>
 
-                <Link href="/finanzas">💰</Link>
+                {/*<Link href="/finanzas">💰</Link>
 
-                <Link href="/reportes">📈</Link>
+                <Link href="/reportes">📈</Link>*/}
+                {/* Clientes */}
 
                 <button
                     onClick={() =>

@@ -1,24 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import {
-    actualizarUbicacion,
-    obtenerRepartidores,
-} from "../../lib/repartidores";
-
-import {
-    MapContainer,
-    TileLayer,
-    Marker,
-    Popup,
-    useMap,
-} from "react-leaflet";
-
+import { actualizarUbicacion, obtenerRepartidores } from "../../lib/repartidores";
+import RepartidorLogin from "./RepartidorLogin";
+import {MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker, Circle } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const REPARTIDOR_ID =
-    "b0468516-2977-4b8d-9da4-72f4dde63832";
+    const motoIcon = L.divIcon({
+        html: `
+            <div style="
+                font-size:32px;
+                transform:translate(-50%,-50%);
+            ">
+                🛵
+            </div>
+        `,
+        className: "",
+        iconSize: [32, 32],
+    });
 
 function RecenterMap({
     position,
@@ -33,6 +33,7 @@ function RecenterMap({
     }, [position, map]);
 
     return null;
+
 }
 
 function FlyToLocation({
@@ -45,15 +46,15 @@ function FlyToLocation({
 
     return (
         <button
-            onClick={() => {
+            onClick={() =>
                 map.flyTo(
                     position,
                     18,
                     {
                         duration: 1.5,
                     }
-                );
-            }}
+                )
+            }
             className="
                 absolute
                 top-4
@@ -71,14 +72,20 @@ function FlyToLocation({
             📍 Mi ubicación
         </button>
     );
+
 }
 
 export default function MapView() {
 
+    const [repartidorId, setRepartidorId] =
+        useState<string | null>(null);
+
     const [modoMapa, setModoMapa] =
-        useState<"mapa" | "satelite" | "trafico">(
-            "mapa"
-        );
+        useState<
+            "mapa" |
+            "satelite" |
+            "trafico"
+        >("mapa");
 
     const [posicion, setPosicion] =
         useState<[number, number]>([
@@ -91,65 +98,69 @@ export default function MapView() {
 
     useEffect(() => {
 
-        if (!navigator.geolocation) {
-            console.error(
-                "Geolocalización no soportada"
+        const id =
+            localStorage.getItem(
+                "repartidorId"
             );
-            return;
-        }
+
+        setRepartidorId(id);
+
+    }, []);
+
+    useEffect(() => {
+
+        if (!repartidorId) return;
 
         const watchId =
             navigator.geolocation.watchPosition(
 
-                async (position) => {
+                async ({ coords }) => {
 
                     const lat =
-                        position.coords.latitude;
+                        coords.latitude;
 
                     const lng =
-                        position.coords.longitude;
+                        coords.longitude;
 
                     setPosicion([
                         lat,
                         lng,
                     ]);
 
+                    console.log(
+                        "ID actual:",
+                        repartidorId
+                    );
+
                     await actualizarUbicacion(
-                        REPARTIDOR_ID,
+                        repartidorId,
                         lat,
                         lng
                     );
 
                 },
 
-                (error) => {
-
-                    console.error(
-                        "Error obteniendo ubicación:",
-                        error
-                    );
-
-                },
+                console.error,
 
                 {
                     enableHighAccuracy: true,
                     maximumAge: 0,
                     timeout: 10000,
                 }
+                
 
             );
 
-        return () => {
+        return () =>
             navigator.geolocation.clearWatch(
                 watchId
             );
-        };
 
-    }, []);
+    }, [repartidorId]);
 
     useEffect(() => {
 
-        async function cargarRepartidores() {
+        async function cargar() {
 
             const data =
                 await obtenerRepartidores();
@@ -160,11 +171,11 @@ export default function MapView() {
 
         }
 
-        cargarRepartidores();
+        cargar();
 
         const interval =
             setInterval(
-                cargarRepartidores,
+                cargar,
                 5000
             );
 
@@ -173,7 +184,20 @@ export default function MapView() {
 
     }, []);
 
+    if (!repartidorId) {
+
+        return (
+            <RepartidorLogin
+                onLogin={
+                    setRepartidorId
+                }
+            />
+        );
+
+    }
+
     return (
+
         <div className="space-y-4">
 
             <div className="flex gap-2 flex-wrap">
@@ -182,14 +206,11 @@ export default function MapView() {
                     onClick={() =>
                         setModoMapa("mapa")
                     }
-                    className={`
-                        px-4 py-2 rounded-lg
-                        ${
-                            modoMapa === "mapa"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-black border"
-                        }
-                    `}
+                    className={`px-4 py-2 rounded-lg ${
+                        modoMapa === "mapa"
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-black border"
+                    }`}
                 >
                     🗺️ Mapa
                 </button>
@@ -198,51 +219,16 @@ export default function MapView() {
                     onClick={() =>
                         setModoMapa("satelite")
                     }
-                    className={`
-                        px-4 py-2 rounded-lg
-                        ${
-                            modoMapa === "satelite"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-black border"
-                        }
-                    `}
+                    className={`px-4 py-2 rounded-lg ${
+                        modoMapa === "satelite"
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-black border"
+                    }`}
                 >
                     🛰️ Satélite
                 </button>
 
-                <button
-                    onClick={() =>
-                        setModoMapa("trafico")
-                    }
-                    className={`
-                        px-4 py-2 rounded-lg
-                        ${
-                            modoMapa === "trafico"
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-black border"
-                        }
-                    `}
-                >
-                    🚦 Tráfico
-                </button>
-
             </div>
-
-            {modoMapa === "trafico" && (
-                <div
-                    className="
-                        bg-yellow-100
-                        border
-                        border-yellow-300
-                        text-yellow-800
-                        p-3
-                        rounded-lg
-                    "
-                >
-                    El modo tráfico estará disponible
-                    próximamente.
-                </div>
-            )}
 
             <div className="relative">
 
@@ -268,55 +254,71 @@ export default function MapView() {
                         position={posicion}
                     />
 
-                    {modoMapa === "satelite" ? (
+                    <TileLayer
+                        key={modoMapa}
+                        attribution={
+                            modoMapa === "satelite"
+                                ? "Esri"
+                                : "OpenStreetMap"
+                        }
+                        url={
+                            modoMapa === "satelite"
+                                ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        }
+                    />
 
-                        <TileLayer
-                            key="satelite"
-                            attribution="Esri"
-                            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                        />
+                    <Circle
+                        center={posicion}
+                        radius={20}
+                        pathOptions={{
+                            color: "#60a5fa",
+                            fillColor: "#60a5fa",
+                            fillOpacity: 0.15,
+                        }}
+                    />
 
-                    ) : (
-
-                        <TileLayer
-                            key="mapa"
-                            attribution="OpenStreetMap"
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-
-                    )}
-
-                    <Marker position={posicion}>
+                    <CircleMarker
+                        center={posicion}
+                        radius={8}
+                        pathOptions={{
+                            color: "#2563eb",
+                            fillColor: "#3b82f6",
+                            fillOpacity: 1,
+                            weight: 3,
+                        }}
+                    >
                         <Popup>
-                            📍 Tu ubicación actual
+                            📍 Tu ubicación
                         </Popup>
-                    </Marker>
+                    </CircleMarker>
 
-                    {repartidores.map((r) => (
-
-                        r.latitud &&
-                        r.longitud && (
-
-                            <Marker
-                                key={r.id}
-                                position={[
-                                    r.latitud,
-                                    r.longitud,
-                                ]}
-                            >
-                                <Popup>
-                                    🛵 {r.nombre}
-                                </Popup>
-                            </Marker>
-
+                    {repartidores
+                        .filter(
+                            (r) =>
+                                r.id !== repartidorId
                         )
+                        .map((r) => (
 
+                            r.latitud &&
+                            r.longitud && (
+
+                                <Marker
+                                    key={r.id}
+                                    position={[
+                                        r.latitud,
+                                        r.longitud,
+                                    ]}
+                                    icon={motoIcon}
+                                >
+                                    <Popup>
+                                        🛵 {r.nombre}
+                                    </Popup>
+                                </Marker>
+                            )
                     ))}
-
                 </MapContainer>
-
             </div>
-
         </div>
     );
 }

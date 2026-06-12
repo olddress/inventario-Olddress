@@ -83,7 +83,7 @@ export default function Sidebar() {
                         {!collapsed && <span>Inventario</span>}
                     </Link>
 
-                    <Link
+                    {/*<Link
                         href="/ventas"
                         className="flex items-center gap-3 p-2 rounded hover:bg-slate-800"
                     >
@@ -97,7 +97,7 @@ export default function Sidebar() {
                     >
                         <span className="text-2xl">👥</span>
                         {!collapsed && <span>Clientes</span>}
-                    </Link>
+                    </Link>*/}
 
                     <Link
                         href="/repartidores"
@@ -107,7 +107,7 @@ export default function Sidebar() {
                         {!collapsed && <span>Repartidores</span>}
                     </Link>
 
-                    <Link
+                    {/*<Link
                         href="/finanzas"
                         className="flex items-center gap-3 p-2 rounded hover:bg-slate-800"
                     >
@@ -121,7 +121,7 @@ export default function Sidebar() {
                     >
                         <span className="text-2xl">📈</span>
                         {!collapsed && <span>Reportes</span>}
-                    </Link>
+                    </Link>*/}
 
                 </nav>
 
