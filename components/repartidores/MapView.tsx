@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 
 import {
+    actualizarUbicacion,
+    obtenerRepartidores,
+} from "../../lib/repartidores";
+
+import {
     MapContainer,
     TileLayer,
     Marker,
@@ -11,6 +16,9 @@ import {
 } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
+
+const REPARTIDOR_ID =
+    "b0468516-2977-4b8d-9da4-72f4dde63832";
 
 function RecenterMap({
     position,
@@ -72,9 +80,14 @@ export default function MapView() {
             "mapa"
         );
 
-    const [posicion, setPosicion] = useState<
-        [number, number]
-    >([4.6097, -74.0817]);
+    const [posicion, setPosicion] =
+        useState<[number, number]>([
+            4.6097,
+            -74.0817,
+        ]);
+
+    const [repartidores, setRepartidores] =
+        useState<any[]>([]);
 
     useEffect(() => {
 
@@ -85,37 +98,78 @@ export default function MapView() {
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
+        const watchId =
+            navigator.geolocation.watchPosition(
 
-            (position) => {
+                async (position) => {
 
-                setPosicion([
-                    position.coords.latitude,
-                    position.coords.longitude,
-                ]);
+                    const lat =
+                        position.coords.latitude;
 
-                console.log(
-                    "Precisión:",
-                    position.coords.accuracy,
-                    "metros"
-                );
+                    const lng =
+                        position.coords.longitude;
 
-            },
+                    setPosicion([
+                        lat,
+                        lng,
+                    ]);
 
-            (error) => {
-                console.error(
-                    "Error obteniendo ubicación:",
-                    error
-                );
-            },
+                    await actualizarUbicacion(
+                        REPARTIDOR_ID,
+                        lat,
+                        lng
+                    );
 
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
+                },
 
-        );
+                (error) => {
+
+                    console.error(
+                        "Error obteniendo ubicación:",
+                        error
+                    );
+
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000,
+                }
+
+            );
+
+        return () => {
+            navigator.geolocation.clearWatch(
+                watchId
+            );
+        };
+
+    }, []);
+
+    useEffect(() => {
+
+        async function cargarRepartidores() {
+
+            const data =
+                await obtenerRepartidores();
+
+            setRepartidores(
+                data || []
+            );
+
+        }
+
+        cargarRepartidores();
+
+        const interval =
+            setInterval(
+                cargarRepartidores,
+                5000
+            );
+
+        return () =>
+            clearInterval(interval);
 
     }, []);
 
@@ -232,13 +286,32 @@ export default function MapView() {
 
                     )}
 
-                    <Marker
-                        position={posicion}
-                    >
+                    <Marker position={posicion}>
                         <Popup>
                             📍 Tu ubicación actual
                         </Popup>
                     </Marker>
+
+                    {repartidores.map((r) => (
+
+                        r.latitud &&
+                        r.longitud && (
+
+                            <Marker
+                                key={r.id}
+                                position={[
+                                    r.latitud,
+                                    r.longitud,
+                                ]}
+                            >
+                                <Popup>
+                                    🛵 {r.nombre}
+                                </Popup>
+                            </Marker>
+
+                        )
+
+                    ))}
 
                 </MapContainer>
 
