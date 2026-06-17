@@ -20,21 +20,6 @@ import "leaflet/dist/leaflet.css";
         iconSize: [32, 32],
     });
 
-function RecenterMap({
-    position,
-}: {
-    position: [number, number];
-}) {
-
-    const map = useMap();
-
-    useEffect(() => {
-        map.setView(position, 15);
-    }, [position, map]);
-
-    return null;
-
-}
 
 function FlyToLocation({
     position,
@@ -198,7 +183,7 @@ export default function MapView() {
 
     return (
 
-        <div className="space-y-4">
+        <div className="space-y-4 bottom-80">
 
             <div className="flex gap-2 flex-wrap">
 
@@ -245,10 +230,6 @@ export default function MapView() {
                         shadow
                     "
                 >
-
-                    <RecenterMap
-                        position={posicion}
-                    />
 
                     <FlyToLocation
                         position={posicion}
