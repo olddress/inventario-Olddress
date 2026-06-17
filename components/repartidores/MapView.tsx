@@ -183,7 +183,7 @@ export default function MapView() {
 
     return (
 
-        <div className="space-y-4 bottom-80">
+        <div className="space-y-4 pb-24 md:pb-0">
 
             <div className="flex gap-2 flex-wrap">
 
