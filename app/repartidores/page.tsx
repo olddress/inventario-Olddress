@@ -22,7 +22,7 @@ export default function RepartidoresPage() {
 
             <Sidebar />
 
-            <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6">
+            <main className="flex-1 p-4 md:p-6 pb-20">
 
                 <h1 className="text-2xl md:text-3xl font-bold text-black mb-6">
                     Repartidores
