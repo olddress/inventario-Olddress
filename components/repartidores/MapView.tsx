@@ -215,7 +215,7 @@ export default function MapView() {
 
             </div>
 
-            <div className="relative">
+            <div className="relative pb-20 md:pb-0">
 
                 <MapContainer
                     center={posicion}
