@@ -19,7 +19,7 @@ export default function MobileNavbar() {
                     bottom-0
                     left-0
                     right-0
-                    bg-red-500
+                    bg-slate-900
                     text-white
                     flex
                     justify-around

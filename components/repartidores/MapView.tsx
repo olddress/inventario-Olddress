@@ -183,7 +183,6 @@ export default function MapView() {
 
     return (
 
-        <div className="space-y-4 pb-24 md:pb-0">
 
             <div className="flex gap-2 flex-wrap">
 
@@ -213,18 +212,15 @@ export default function MapView() {
                     🛰️ Satélite
                 </button>
 
-            </div>
 
             <div className="relative pb-20 md:pb-0">
 
                 <MapContainer
                     center={posicion}
                     zoom={15}
-                    style={{
-                        height: "600px",
-                        width: "100%",
-                    }}
                     className="
+                        h-[65vh]
+                        md:h-150
                         rounded-xl
                         overflow-hidden
                         shadow
