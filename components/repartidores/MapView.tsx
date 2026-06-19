@@ -3,9 +3,15 @@
 import { useEffect, useState } from "react";
 import { actualizarUbicacion, obtenerRepartidores } from "../../lib/repartidores";
 import RepartidorLogin from "./RepartidorLogin";
-import {MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { obtenerEntregas, actualizarCoordenadasEntrega } from "../../lib/entregas";
+import { geocodificarDireccion } from "../../lib/geocoding";
+import RutaRepartidor from "./RutaRepartidor";
+import FlyToLocation from "./FlyToLocation";
+import MiUbicacionLayer from "./MiUbicacionLayer";
+
 
     const motoIcon = L.divIcon({
         html: `
@@ -19,46 +25,6 @@ import "leaflet/dist/leaflet.css";
         className: "",
         iconSize: [32, 32],
     });
-
-
-function FlyToLocation({
-    position,
-}: {
-    position: [number, number];
-}) {
-
-    const map = useMap();
-
-    return (
-        <button
-            onClick={() =>
-                map.flyTo(
-                    position,
-                    18,
-                    {
-                        duration: 1.5,
-                    }
-                )
-            }
-            className="
-                absolute
-                top-4
-                right-4
-                z-1000
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                px-4
-                py-2
-                rounded-lg
-                shadow-lg
-            "
-        >
-            📍 Mi ubicación
-        </button>
-    );
-
-}
 
 export default function MapView() {
 
@@ -80,6 +46,11 @@ export default function MapView() {
 
     const [repartidores, setRepartidores] =
         useState<any[]>([]);
+
+        const [
+            repartidorSeleccionado,
+            setRepartidorSeleccionado,
+        ] = useState("todos");
 
     useEffect(() => {
 
@@ -169,6 +140,48 @@ export default function MapView() {
 
     }, []);
 
+    async function geocodificarEntregas() {
+
+            if (!repartidorSeleccionado ||
+                repartidorSeleccionado === "todos")
+                return;
+
+            const entregas =
+                await obtenerEntregas(
+                    repartidorSeleccionado
+                );
+
+            for (const entrega of entregas) {
+
+                if (
+                    entrega.latitud &&
+                    entrega.longitud
+                ) {
+                    continue;
+                }
+
+                const coords =
+                    await geocodificarDireccion(
+                        entrega.direccion
+                    );
+
+                if (!coords) continue;
+
+                await actualizarCoordenadasEntrega(
+                    entrega.id,
+                    coords.latitud,
+                    coords.longitud
+                );
+
+                console.log(
+                    "Geocodificada:",
+                    entrega.direccion
+                );
+
+            }
+
+        }
+
     if (!repartidorId) {
 
         return (
@@ -180,6 +193,17 @@ export default function MapView() {
         );
 
     }
+
+    const repartidoresFiltrados =
+    repartidorSeleccionado === "todos"
+
+        ? repartidores
+
+        : repartidores.filter(
+            (r) =>
+                r.id ===
+                repartidorSeleccionado
+        );
 
     return (
 
@@ -211,6 +235,49 @@ export default function MapView() {
                     }`}
                 >
                     🛰️ Satélite
+                </button>
+
+                <select
+                    value={repartidorSeleccionado}
+                    onChange={(e) =>
+                        setRepartidorSeleccionado(
+                            e.target.value
+                        )
+                    }
+                    className="
+                        px-4 py-2
+                        rounded-lg
+                        border
+                        bg-white
+                        text-black
+                    "
+                >
+                    <option value="todos">
+                        Todos los repartidores
+                    </option>
+
+                    {repartidores.map((r) => (
+
+                        <option
+                            key={r.id}
+                            value={r.id}
+                        >
+                            {r.nombre}
+                        </option>
+
+                    ))}
+                </select>
+
+                <button
+                    onClick={geocodificarEntregas}
+                    className="
+                        px-4 py-2
+                        rounded-lg
+                        bg-purple-600
+                        text-white
+                    "
+                >
+                    📍 Geocodificar entregas
                 </button>
 
             </div>
@@ -249,32 +316,18 @@ export default function MapView() {
                         }
                     />
 
-                    <Circle
-                        center={posicion}
-                        radius={20}
-                        pathOptions={{
-                            color: "#60a5fa",
-                            fillColor: "#60a5fa",
-                            fillOpacity: 0.15,
-                        }}
-                    />
+                    {repartidorSeleccionado !==
+                        "todos" && (
 
-                    <CircleMarker
-                        center={posicion}
-                        radius={8}
-                        pathOptions={{
-                            color: "#2563eb",
-                            fillColor: "#3b82f6",
-                            fillOpacity: 1,
-                            weight: 3,
-                        }}
-                    >
-                        <Popup>
-                            📍 Tu ubicación
-                        </Popup>
-                    </CircleMarker>
+                        <RutaRepartidor
+                            repartidorId={
+                                repartidorSeleccionado
+                            }
+                        />
 
-                    {repartidores
+                    )}
+
+                    {repartidoresFiltrados
                         .filter(
                             (r) =>
                                 r.id !== repartidorId
@@ -298,6 +351,9 @@ export default function MapView() {
                                 </Marker>
                             )
                     ))}
+                    <MiUbicacionLayer
+                        posicion={posicion}
+                    />
                 </MapContainer>
             </div>
         </div>
