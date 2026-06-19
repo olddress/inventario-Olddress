@@ -8,17 +8,17 @@ import {
 import L from "leaflet";
 
 const motoIcon = L.divIcon({
-    html: `
-        <div style="
-            font-size:32px;
-            transform:translate(-50%,-50%);
-        ">
-            🛵
-        </div>
-    `,
-    className: "",
-    iconSize: [32, 32],
-});
+        html: `
+            <div style="
+                font-size:32px;
+                transform:translate(-50%,-50%);
+            ">
+                🛵
+            </div>
+        `,
+        className: "",
+        iconSize: [32, 32],
+    });
 
 export default function RepartidoresLayer({
     repartidores,
