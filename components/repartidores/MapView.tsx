@@ -239,7 +239,7 @@ export default function MapView() {
                     zoom={15}
                     style={{
                         height:
-                            "calc(100vh - 220px)",
+                            "calc(100vh - 360px)",
                         width:
                             "100%",
                     }}
