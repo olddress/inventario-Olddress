@@ -2,6 +2,7 @@
 
 "use client";
 
+import { finalizarRuta } from "@/lib/entregas";
 import DireccionSearch from "./DireccionSearch";
 
 type Props = {
@@ -135,6 +136,16 @@ export default function MapaControles({
                 "
             >
                 📍 Geocodificar entregas
+            </button>
+
+            <button
+                onClick={() =>
+                    finalizarRuta(
+                        repartidorSeleccionado
+                    )
+                }
+            >
+                ✅ Finalizar ruta
             </button>
 
         </div>

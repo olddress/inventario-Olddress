@@ -8,6 +8,8 @@ import RutaRepartidor from "./RutaRepartidor";
 import MapaControles from "./MapaControles";
 import MotoMarker from "./MotoMarker";
 import PuntosRutaLayer from "./PuntosRutaLayer";
+import RutaLayer
+from "./RutaLayer";
 
 import { MapContainer, TileLayer } from "react-leaflet";
 
@@ -18,6 +20,8 @@ import { obtenerRepartidores } from "../../lib/repartidores";
 import {
     obtenerEntregas,
     actualizarCoordenadasEntrega,
+    crearEntrega,
+    obtenerEntregasPendientes,
 } from "../../lib/entregas";
 
 import {
@@ -27,6 +31,8 @@ import {
 import useGeolocalizacion
 from "../repartidores/hooks/UseGeolocalizacion";
 
+
+
 export default function MapView() {
 
     const [
@@ -35,8 +41,8 @@ export default function MapView() {
     ] = useState<
         {
             direccion: string;
-            lat: number;
-            lng: number;
+            latitud: number;
+            longitud: number;
         }[]
     >([]);
 
@@ -159,24 +165,49 @@ export default function MapView() {
 
     }
 
-    function manejarDireccionSeleccionada(
+    async function manejarDireccionSeleccionada(
         direccion: string,
         lat: number,
         lng: number
     ) {
 
+        if (
+            repartidorSeleccionado ===
+            "todos"
+        ) {
+            return;
+        }
+
+        const entregasPendientes =
+            await obtenerEntregasPendientes(
+                repartidorSeleccionado
+            );
+
+        const nuevaEntrega = {
+            repartidor_id:
+                repartidorSeleccionado,
+
+            direccion,
+
+            latitud: lat,
+
+            longitud: lng,
+
+            orden:
+                entregasPendientes.length + 1,
+        };
+
+        await crearEntrega(
+            nuevaEntrega
+        );
+
+        const entregasActualizadas =
+            await obtenerEntregasPendientes(
+                repartidorSeleccionado
+            );
+
         setPuntosRuta(
-            (prev) => [
-
-                ...prev,
-
-                {
-                    direccion,
-                    lat,
-                    lng,
-                },
-
-            ]
+            entregasActualizadas
         );
 
     }
@@ -280,6 +311,10 @@ export default function MapView() {
                         puntosRuta={
                             puntosRuta
                         }
+                    />
+
+                    <RutaLayer
+                        puntos={puntosRuta}
                     />
 
                     {repartidorSeleccionado !==

@@ -51,3 +51,87 @@ export async function actualizarCoordenadasEntrega(
     }
 
 }
+
+export async function crearEntrega(
+    entrega: {
+        repartidor_id: string;
+        direccion: string;
+        latitud: number;
+        longitud: number;
+        orden: number;
+    }
+) {
+
+    const { error } =
+        await supabase
+
+            .from("entregas")
+
+            .insert(entrega);
+
+    if (error) {
+        console.error(error);
+    }
+
+}
+
+export async function obtenerEntregasPendientes(
+    repartidorId: string
+) {
+
+    const { data, error } =
+        await supabase
+            .from("entregas")
+            .select("*")
+            .eq(
+                "repartidor_id",
+                repartidorId
+            )
+            .eq(
+                "estado",
+                "pendiente"
+            )
+            .order(
+                "orden",
+                {
+                    ascending: true,
+                }
+            );
+
+    if (error) {
+        console.error(error);
+    }
+
+    return data || [];
+
+}
+
+export async function finalizarRuta(
+    repartidorId: string
+) {
+
+    const { error } =
+        await supabase
+
+            .from("entregas")
+
+            .update({
+                estado:
+                    "completada",
+            })
+
+            .eq(
+                "repartidor_id",
+                repartidorId
+            )
+
+            .eq(
+                "estado",
+                "pendiente"
+            );
+
+    if (error) {
+        console.error(error);
+    }
+
+}

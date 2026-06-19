@@ -1,64 +1,88 @@
 "use client";
 
 import {
-    CircleMarker,
+    Marker,
     Popup,
 } from "react-leaflet";
 
+import L from "leaflet";
+
 type PuntoRuta = {
     direccion: string;
-    lat: number;
-    lng: number;
+    latitud: number;
+    longitud: number;
 };
 
 type Props = {
     puntosRuta: PuntoRuta[];
 };
 
+const entregaIcon = L.divIcon({
+    html: `
+        <div style="
+            font-size:28px;
+            transform:translate(-50%,-50%);
+        ">
+            📦
+        </div>
+    `,
+    className: "",
+    iconSize: [28, 28],
+});
+
 export default function PuntosRutaLayer({
     puntosRuta,
 }: Props) {
 
+    console.log(
+        "PUNTOS RUTA:",
+        puntosRuta
+    );
+
     return (
 
         <>
-
             {puntosRuta.map(
 
                 (punto, index) => (
 
-                    <CircleMarker
-                        key={index}
-                        center={[
-                            punto.lat,
-                            punto.lng,
-                        ]}
-                        radius={10}
-                        pathOptions={{
-                            color: "red",
-                            fillColor: "red",
-                            fillOpacity: 1,
-                        }}
-                    >
+                    punto.latitud &&
+                    punto.longitud && (
 
-                        <Popup>
+                        <Marker
+                            key={index}
+                            position={[
+                                Number(
+                                    punto.latitud
+                                ),
+                                Number(
+                                    punto.longitud
+                                ),
+                            ]}
+                            icon={
+                                entregaIcon
+                            }
+                        >
 
-                            <strong>
-                                Parada #{index + 1}
-                            </strong>
+                            <Popup>
 
-                            <br />
+                                <strong>
+                                    Parada #{index + 1}
+                                </strong>
 
-                            {punto.direccion}
+                                <br />
 
-                        </Popup>
+                                {punto.direccion}
 
-                    </CircleMarker>
+                            </Popup>
+
+                        </Marker>
+
+                    )
 
                 )
 
             )}
-
         </>
 
     );
