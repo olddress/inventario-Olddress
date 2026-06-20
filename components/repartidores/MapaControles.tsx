@@ -125,25 +125,17 @@ export default function MapaControles({
             </select>
 
             <button
-                onClick={
-                    geocodificarEntregas
-                }
-                className="
-                    px-4 py-2
-                    rounded-lg
-                    bg-purple-600
-                    text-white
-                "
-            >
-                📍 Geocodificar entregas
-            </button>
-
-            <button
                 onClick={() =>
                     finalizarRuta(
                         repartidorSeleccionado
                     )
                 }
+                className="
+                    px-4 py-2
+                    rounded-lg
+                    bg-green-500
+                    text-white
+                "
             >
                 ✅ Finalizar ruta
             </button>

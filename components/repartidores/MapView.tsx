@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import RepartidorLogin from "./RepartidorLogin";
 import FlyToLocation from "./FlyToLocation";
 import MiUbicacionLayer from "./MiUbicacionLayer";
-import RutaRepartidor from "./RutaRepartidor";
 import MapaControles from "./MapaControles";
 import MotoMarker from "./MotoMarker";
 import PuntosRutaLayer from "./PuntosRutaLayer";
-import RutaLayer
-from "./RutaLayer";
+import RutaLayer from "./RutaLayer";
 
 import { MapContainer, TileLayer } from "react-leaflet";
 
@@ -23,10 +21,6 @@ import {
     crearEntrega,
     obtenerEntregasPendientes,
 } from "../../lib/entregas";
-
-import {
-    geocodificarDireccion,
-} from "../../lib/geocoding";
 
 import useGeolocalizacion
 from "../repartidores/hooks/UseGeolocalizacion";
@@ -114,6 +108,36 @@ export default function MapView() {
 
     }, []);
 
+    useEffect(() => {
+
+        async function cargarRuta() {
+
+            if (
+                repartidorSeleccionado ===
+                "todos"
+            ) {
+
+                setPuntosRuta([]);
+
+                return;
+
+            }
+
+            const entregas =
+                await obtenerEntregasPendientes(
+                    repartidorSeleccionado
+                );
+
+            setPuntosRuta(
+                entregas
+            );
+
+        }
+
+        cargarRuta();
+
+    }, [repartidorSeleccionado]);
+
     async function geocodificarEntregas() {
 
         if (
@@ -140,26 +164,6 @@ export default function MapView() {
             ) {
                 continue;
             }
-
-            const coords =
-                await geocodificarDireccion(
-                    entrega.direccion
-                );
-
-            if (!coords) {
-                continue;
-            }
-
-            await actualizarCoordenadasEntrega(
-                entrega.id,
-                coords.latitud,
-                coords.longitud
-            );
-
-            console.log(
-                "Geocodificada:",
-                entrega.direccion
-            );
 
         }
 
@@ -237,6 +241,13 @@ export default function MapView() {
                     repartidorSeleccionado
             );
 
+            const repartidorActual =
+            repartidores.find(
+                (r) =>
+                    r.id ===
+                    repartidorSeleccionado
+            );
+
     return (
 
         <div className="space-y-4">
@@ -308,25 +319,28 @@ export default function MapView() {
                     />
 
                     <PuntosRutaLayer
-                        puntosRuta={
-                            puntosRuta
-                        }
+                        puntosRuta={puntosRuta}
                     />
 
-                    <RutaLayer
-                        puntos={puntosRuta}
-                    />
+                    {
+                    repartidorActual?.latitud &&
+                    repartidorActual?.longitud && (
 
-                    {repartidorSeleccionado !==
-                        "todos" && (
-
-                        <RutaRepartidor
-                            repartidorId={
-                                repartidorSeleccionado
-                            }
+                        <RutaLayer
+                            posicionActual={[
+                                Number(
+                                    repartidorActual.latitud
+                                ),
+                                Number(
+                                    repartidorActual.longitud
+                                ),
+                            ]}
+                            puntosRuta={puntosRuta}
                         />
 
-                    )}
+                    )
+                }
+
 
                     <MiUbicacionLayer
                         posicion={posicion}

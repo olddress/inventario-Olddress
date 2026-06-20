@@ -34,11 +34,6 @@ export default function PuntosRutaLayer({
     puntosRuta,
 }: Props) {
 
-    console.log(
-        "PUNTOS RUTA:",
-        puntosRuta
-    );
-
     return (
 
         <>
