@@ -1,9 +1,4 @@
-// components/repartidores/MotoMarker.tsx
-
-import {
-    Marker,
-    Popup,
-} from "react-leaflet";
+import { Marker, Popup, } from "react-leaflet";
 
 import L from "leaflet";
 

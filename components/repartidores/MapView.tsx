@@ -20,10 +20,18 @@ import {
     actualizarCoordenadasEntrega,
     crearEntrega,
     obtenerEntregasPendientes,
+    finalizarEntrega,
 } from "../../lib/entregas";
 
 import useGeolocalizacion
 from "../repartidores/hooks/UseGeolocalizacion";
+
+type PuntoRuta = {
+    id: string;
+    direccion: string;
+    latitud: number;
+    longitud: number;
+};
 
 
 
@@ -32,13 +40,7 @@ export default function MapView() {
     const [
         puntosRuta,
         setPuntosRuta,
-    ] = useState<
-        {
-            direccion: string;
-            latitud: number;
-            longitud: number;
-        }[]
-    >([]);
+    ] = useState<PuntoRuta[]>([]);
 
     const [
         repartidorId,
@@ -138,35 +140,28 @@ export default function MapView() {
 
     }, [repartidorSeleccionado]);
 
-    async function geocodificarEntregas() {
-
+    async function handleFinalizarEntrega(
+        entregaId: string
+    ) {
         if (
-            !repartidorSeleccionado ||
             repartidorSeleccionado ===
-                "todos"
+            "todos"
         ) {
             return;
         }
 
-        const entregas =
-            await obtenerEntregas(
+        await finalizarEntrega(
+            entregaId
+        );
+
+        const nuevasEntregas =
+            await obtenerEntregasPendientes(
                 repartidorSeleccionado
             );
 
-        for (
-            const entrega
-            of entregas
-        ) {
-
-            if (
-                entrega.latitud &&
-                entrega.longitud
-            ) {
-                continue;
-            }
-
-        }
-
+        setPuntosRuta(
+            nuevasEntregas
+        );
     }
 
     async function manejarDireccionSeleccionada(
@@ -248,6 +243,10 @@ export default function MapView() {
                     repartidorSeleccionado
             );
 
+    function geocodificarEntregas(): void {
+        throw new Error("Function not implemented.");
+    }
+
     return (
 
         <div className="space-y-4">
@@ -320,8 +319,10 @@ export default function MapView() {
 
                     <PuntosRutaLayer
                         puntosRuta={puntosRuta}
+                        onFinalizarEntrega={
+                            handleFinalizarEntrega
+                        }
                     />
-
                     {
                     repartidorActual?.latitud &&
                     repartidorActual?.longitud && (

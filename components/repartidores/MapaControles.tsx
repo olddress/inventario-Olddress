@@ -35,7 +35,6 @@ export default function MapaControles({
     repartidores,
     repartidorSeleccionado,
     setRepartidorSeleccionado,
-    geocodificarEntregas,
     onDireccionSeleccionada,
 }: Props) {
 

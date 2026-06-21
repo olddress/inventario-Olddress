@@ -135,3 +135,20 @@ export async function finalizarRuta(
     }
 
 }
+
+export async function finalizarEntrega(
+    entregaId: string
+) {
+    const { error } =
+        await supabase
+            .from("entregas")
+            .update({
+                estado: "completada",
+            })
+            .eq("id", entregaId);
+
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+}
