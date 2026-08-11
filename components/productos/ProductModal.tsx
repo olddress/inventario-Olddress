@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
     type Props = {
     producto?: any;
     onClose: () => void;
-    onSave: (producto: any, imagenes: File[]) => Promise<void>;
+    onSave: (producto: any, imagenes: File[], indicePrincipal: number) => Promise<void>
     };
 
     export default function ProductModal({
@@ -26,6 +26,8 @@ import { useState, useEffect } from "react";
         precio: "",
         imagen_principal_url: "",
     });
+
+    const [indicePrincipal, setIndicePrincipal] = useState(0);
 
     useEffect(() => {
         if (producto) {
@@ -67,7 +69,8 @@ import { useState, useEffect } from "react";
                 .replaceAll("_", " ")
                 .toLowerCase(),
             },
-            imagenes
+            imagenes,
+            indicePrincipal
         );
         } catch (err) {
         console.error("Unexpected error:", err);
@@ -168,9 +171,10 @@ import { useState, useEffect } from "react";
                 accept="image/*"
                 onChange={(e) => {
                     if (e.target.files) {
-                    setImagenes(Array.from(e.target.files));
+                        setImagenes(Array.from(e.target.files));
+                        setIndicePrincipal(0);
                     }
-                }}
+                    }}
                 className="w-full border p-2 rounded text-black"
                 />
 
@@ -182,38 +186,26 @@ import { useState, useEffect } from "react";
             {imagenes.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 mt-4">
                 {imagenes.map((img, index) => (
-                    <div key={index} className="relative">
-                    <img
+                    <div
+                        key={index}
+                        className="relative cursor-pointer"
+                        onClick={() => setIndicePrincipal(index)}
+                    >
+                        <img
                         src={URL.createObjectURL(img)}
-                        alt={`Vista previa ${index + 1}`}
-                        className="
-                        w-full
-                        h-24
-                        object-cover
-                        rounded-lg
-                        border
-                        "
-                    />
+                        className={`
+                            w-full h-24 object-cover rounded-lg border-2
+                            ${index === indicePrincipal ? "border-blue-600" : "border-gray-300"}
+                        `}
+                        />
 
-                    {index === 0 && (
-                        <span
-                        className="
-                            absolute
-                            top-1
-                            left-1
-                            bg-blue-600
-                            text-white
-                            text-xs
-                            px-2
-                            py-0.5
-                            rounded
-                        "
-                        >
-                        Principal
+                        {index === indicePrincipal && (
+                        <span className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
+                            Principal
                         </span>
-                    )}
+                        )}
                     </div>
-                ))}
+                    ))}
                 </div>
             )}
             </div>

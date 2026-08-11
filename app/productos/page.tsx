@@ -39,13 +39,16 @@ export default function ProductosPage() {
         cargarProductos();
     }, []);
 
-    async function guardarProducto(producto: any, imagenes: File[]) {
+    async function guardarProducto(
+        producto: any,
+        imagenes: File[],
+        indicePrincipal: number
+        ) {
         try {
-        if (producto.id) {
-            // Edición del producto (por ahora no cambia la galería)
+            if (producto.id) {
             const { error } = await supabase
-            .from("Productos")
-            .update({
+                .from("Productos")
+                .update({
                 categoria: producto.categoria,
                 marca: producto.marca,
                 talla: producto.talla,
@@ -53,83 +56,94 @@ export default function ProductosPage() {
                 detalles: producto.detalles,
                 stock: Number(producto.stock),
                 precio: Number(producto.precio),
-            })
-            .eq("id", producto.id);
+                })
+                .eq("id", producto.id);
 
             if (error) throw error;
-        } else {
-            // Crear producto nuevo
+            } else {
             const { data: nuevoProducto, error } = await supabase
-            .from("Productos")
-            .insert([
+                .from("Productos")
+                .insert([
                 {
-                categoria: producto.categoria,
-                marca: producto.marca,
-                talla: producto.talla,
-                color: producto.color,
-                detalles: producto.detalles,
-                stock: Number(producto.stock),
-                precio: Number(producto.precio),
+                    categoria: producto.categoria,
+                    marca: producto.marca,
+                    talla: producto.talla,
+                    color: producto.color,
+                    detalles: producto.detalles,
+                    stock: Number(producto.stock),
+                    precio: Number(producto.precio),
                 },
-            ])
-            .select()
-            .single();
+                ])
+                .select()
+                .single();
 
             if (error) throw error;
 
             const productoId = nuevoProducto.id;
+
+            // Reordenar las imágenes para que la principal quede de primera
+            const imagenesOrdenadas = [...imagenes];
+
+            if (
+                indicePrincipal >= 0 &&
+                indicePrincipal < imagenesOrdenadas.length
+            ) {
+                const principal = imagenesOrdenadas.splice(indicePrincipal, 1)[0];
+                imagenesOrdenadas.unshift(principal);
+            }
+
             let imagenPrincipal = "";
 
-            for (let i = 0; i < imagenes.length; i++) {
-            const archivo = imagenes[i];
+            for (let i = 0; i < imagenesOrdenadas.length; i++) {
+                const archivo = imagenesOrdenadas[i];
 
-            const nombreArchivo = `${productoId}/${Date.now()}_${i}_${archivo.name}`;
+                const nombreArchivo = `${productoId}/${Date.now()}_${i}_${archivo.name}`;
 
-            const { error: uploadError } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                 .from("Productos")
                 .upload(nombreArchivo, archivo);
 
-            if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-            const { data: urlData } = supabase.storage
+                const { data: urlData } = supabase.storage
                 .from("Productos")
                 .getPublicUrl(nombreArchivo);
 
-            const url = urlData.publicUrl;
+                const url = urlData.publicUrl;
 
-            if (i === 0) {
+                if (i === 0) {
                 imagenPrincipal = url;
-            }
+                }
 
-            const { error: imgError } = await supabase
+                const { error: imgError } = await supabase
                 .from("ProductoImagenes")
                 .insert({
-                producto_id: productoId,
-                imagen_url: url,
-                orden: i,
+                    producto_id: productoId,
+                    imagen_url: url,
+                    orden: i,
                 });
 
-            if (imgError) throw imgError;
+                if (imgError) throw imgError;
             }
 
             if (imagenPrincipal) {
-            const { error: principalError } = await supabase
+                const { error: principalError } = await supabase
                 .from("Productos")
                 .update({ imagen_principal_url: imagenPrincipal })
                 .eq("id", productoId);
 
-            if (principalError) throw principalError;
+                if (principalError) throw principalError;
             }
-        }
+            }
 
-        await cargarProductos();
+            await cargarProductos();
 
-        setShowModal(false);
-        setProductoEditando(null);
+            setShowModal(false);
+            setProductoEditando(null);
         } catch (err) {
-        console.error("Error guardando producto:", err);
+            console.error("Error guardando producto:", err);
         }
-    }
+        }
 
     const productosFiltrados = productos.filter((producto) => {
         const textoCompleto = `
