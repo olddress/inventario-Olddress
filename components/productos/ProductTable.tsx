@@ -7,7 +7,7 @@ type Producto = {
     categoria: string;
     marca: string;
     talla: string;
-    imagen_url: string;
+    imagen_principal_url: string;
     precio: number;
     color: string;
     detalles: string;
@@ -80,13 +80,13 @@ export default function ProductTable({
 
                                 <img
                                     src={
-                                        p.imagen_url ||
+                                        p.imagen_principal_url ||
                                         "/placeholder.jpg"
                                     }
                                     alt="Producto"
                                     onClick={() =>
                                         setImagenGrande(
-                                            p.imagen_url ||
+                                            p.imagen_principal_url ||
                                             "/placeholder.jpg"
                                         )
                                     }
