@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 
     const [form, setForm] = useState({
         id: "",
+        title: "",
         categoria: "",
         marca: "",
         talla: "",
@@ -33,6 +34,7 @@ import { useState, useEffect } from "react";
         if (producto) {
         setForm({
             id: producto.id || "",
+            title: producto.title || "",
             categoria: producto.categoria || "",
             marca: producto.marca || "",
             talla: producto.talla || "",
@@ -45,6 +47,7 @@ import { useState, useEffect } from "react";
         } else {
         setForm({
             id: "",
+            title: "",
             categoria: "",
             marca: "",
             talla: "",
@@ -96,6 +99,14 @@ import { useState, useEffect } from "react";
             </h2>
 
             <div className="space-y-3">
+                <input
+                placeholder="Título"
+                className="w-full border p-2 rounded text-black"
+                value={form.title}
+                onChange={(e) =>
+                setForm({ ...form, title: e.target.value })
+                }
+            />
             <input
                 placeholder="Categoría"
                 className="w-full border p-2 rounded text-black"
