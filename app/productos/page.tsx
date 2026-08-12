@@ -40,111 +40,121 @@ export default function ProductosPage() {
     }, []);
 
     async function guardarProducto(
-        producto: any,
-        imagenes: File[],
-        indicePrincipal: number
-        ) {
-        try {
-            if (producto.id) {
-            const { error } = await supabase
-                .from("Productos")
-                .update({
-                title: producto.title,
-                categoria: producto.categoria,
-                marca: producto.marca,
-                talla: producto.talla,
-                color: producto.color,
-                detalles: producto.detalles,
-                stock: Number(producto.stock),
-                precio: Number(producto.precio),
-                })
-                .eq("id", producto.id);
+  producto: any,
+  imagenes: File[],
+  indicePrincipal: number
+) {
+  try {
+    if (producto.id) {
+      // Editar producto
+      console.log("Producto a actualizar:", producto);
 
-            if (error) throw error;
-            } else {
-            const { data: nuevoProducto, error } = await supabase
-                .from("Productos")
-                .insert([
-                {
-                    categoria: producto.categoria,
-                    marca: producto.marca,
-                    talla: producto.talla,
-                    color: producto.color,
-                    detalles: producto.detalles,
-                    stock: Number(producto.stock),
-                    precio: Number(producto.precio),
-                },
-                ])
-                .select()
-                .single();
+      const { error } = await supabase
+        .from("Productos")
+        .update({
+          title: producto.title,
+          categoria: producto.categoria,
+          marca: producto.marca,
+          talla: producto.talla,
+          color: producto.color,
+          detalles: producto.detalles,
+          stock: Number(producto.stock),
+          precio: Number(producto.precio),
+        })
+        .eq("id", producto.id);
 
-            if (error) throw error;
+      if (error) throw error;
+    } else {
+      // Crear producto nuevo
 
-            const productoId = nuevoProducto.id;
+      const datosInsert = {
+        title: producto.title,
+        categoria: producto.categoria,
+        marca: producto.marca,
+        talla: producto.talla,
+        color: producto.color,
+        detalles: producto.detalles,
+        stock: Number(producto.stock),
+        precio: Number(producto.precio),
+      };
 
-            // Reordenar las imágenes para que la principal quede de primera
-            const imagenesOrdenadas = [...imagenes];
+      console.log("Datos a insertar:", datosInsert);
 
-            if (
-                indicePrincipal >= 0 &&
-                indicePrincipal < imagenesOrdenadas.length
-            ) {
-                const principal = imagenesOrdenadas.splice(indicePrincipal, 1)[0];
-                imagenesOrdenadas.unshift(principal);
-            }
+      const { data: nuevoProducto, error } = await supabase
+        .from("Productos")
+        .insert([datosInsert])
+        .select()
+        .single();
 
-            let imagenPrincipal = "";
+      console.log("Resultado del insert:", nuevoProducto);
 
-            for (let i = 0; i < imagenesOrdenadas.length; i++) {
-                const archivo = imagenesOrdenadas[i];
+      if (error) throw error;
 
-                const nombreArchivo = `${productoId}/${Date.now()}_${i}_${archivo.name}`;
+      const productoId = nuevoProducto.id;
 
-                const { error: uploadError } = await supabase.storage
-                .from("Productos")
-                .upload(nombreArchivo, archivo);
+      // Reordenar imágenes para que la principal quede primero
+      const imagenesOrdenadas = [...imagenes];
 
-                if (uploadError) throw uploadError;
+      if (
+        indicePrincipal >= 0 &&
+        indicePrincipal < imagenesOrdenadas.length
+      ) {
+        const principal = imagenesOrdenadas.splice(indicePrincipal, 1)[0];
+        imagenesOrdenadas.unshift(principal);
+      }
 
-                const { data: urlData } = supabase.storage
-                .from("Productos")
-                .getPublicUrl(nombreArchivo);
+      let imagenPrincipal = "";
 
-                const url = urlData.publicUrl;
+      for (let i = 0; i < imagenesOrdenadas.length; i++) {
+        const archivo = imagenesOrdenadas[i];
 
-                if (i === 0) {
-                imagenPrincipal = url;
-                }
+        const nombreArchivo = `${productoId}/${Date.now()}_${i}_${archivo.name}`;
 
-                const { error: imgError } = await supabase
-                .from("ProductoImagenes")
-                .insert({
-                    producto_id: productoId,
-                    imagen_url: url,
-                    orden: i,
-                });
+        const { error: uploadError } = await supabase.storage
+          .from("Productos")
+          .upload(nombreArchivo, archivo);
 
-                if (imgError) throw imgError;
-            }
+        if (uploadError) throw uploadError;
 
-            if (imagenPrincipal) {
-                const { error: principalError } = await supabase
-                .from("Productos")
-                .update({ imagen_principal_url: imagenPrincipal })
-                .eq("id", productoId);
+        const { data: urlData } = supabase.storage
+          .from("Productos")
+          .getPublicUrl(nombreArchivo);
 
-                if (principalError) throw principalError;
-            }
-            }
+        const url = urlData.publicUrl;
 
-            await cargarProductos();
-
-            setShowModal(false);
-            setProductoEditando(null);
-        } catch (err) {
-            console.error("Error guardando producto:", err);
+        if (i === 0) {
+          imagenPrincipal = url;
         }
-        }
+
+        const { error: imgError } = await supabase
+          .from("ProductoImagenes")
+          .insert({
+            producto_id: productoId,
+            imagen_url: url,
+            orden: i,
+          });
+
+        if (imgError) throw imgError;
+      }
+
+      if (imagenPrincipal) {
+        const { error: principalError } = await supabase
+          .from("Productos")
+          .update({ imagen_principal_url: imagenPrincipal })
+          .eq("id", productoId);
+
+        if (principalError) throw principalError;
+      }
+    }
+
+    await cargarProductos();
+
+    setShowModal(false);
+    setProductoEditando(null);
+  } catch (err) {
+    console.error("Error guardando producto:", err);
+  }
+}
 
     const productosFiltrados = productos.filter((producto) => {
         const textoCompleto = `
