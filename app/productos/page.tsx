@@ -49,6 +49,7 @@ export default function ProductosPage() {
             const { error } = await supabase
                 .from("Productos")
                 .update({
+                Titulo: producto.title,
                 categoria: producto.categoria,
                 marca: producto.marca,
                 talla: producto.talla,
