@@ -49,7 +49,7 @@ export default function ProductosPage() {
             const { error } = await supabase
                 .from("Productos")
                 .update({
-                Titulo: producto.title,
+                title: producto.title,
                 categoria: producto.categoria,
                 marca: producto.marca,
                 talla: producto.talla,
@@ -149,6 +149,7 @@ export default function ProductosPage() {
     const productosFiltrados = productos.filter((producto) => {
         const textoCompleto = `
         ${producto.id ?? ""}
+        ${producto.title ?? ""}
         ${producto.categoria ?? ""}
         ${producto.marca ?? ""}
         ${producto.color ?? ""}
