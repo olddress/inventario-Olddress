@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 type Producto = {
+    title: string;
     id: string;
     categoria: string;
     marca: string;
@@ -39,6 +40,7 @@ export default function ProductTable({
                     <tr className="border-b">
 
                         <th className="p-3 text-left">ID</th>
+                        <th className="p-3 text-left">Título</th>
                         <th className="p-3 text-left">Imagen</th>
                         <th className="p-3 text-left">Categoría</th>
                         <th className="p-3 text-left">Marca</th>
@@ -74,6 +76,10 @@ export default function ProductTable({
 
                             <td className="p-3">
                                 {p.id}
+                            </td>
+
+                            <td className="p-3">
+                                {p.title}
                             </td>
 
                             <td className="p-3">
